@@ -40,7 +40,7 @@ func (z *ZapLogger) log(ctx context.Context, level zapcore.Level, msg string, fi
 		zapFields[i/2] = zap.Any(key, fields[i+1])
 	}
 
-	pc, file, line, ok := runtime.Caller(z.skip)
+	pc, file, line, ok := runtime.Caller(z.skip + 2)
 	if ok {
 		// 获取函数名
 		funcName := runtime.FuncForPC(pc).Name()
@@ -52,8 +52,7 @@ func (z *ZapLogger) log(ctx context.Context, level zapcore.Level, msg string, fi
 	// 添加 trace_id 和 caller
 	zapFields = append(zapFields, zap.String("trace_id", z.traceID))
 
-	// 设置 caller 的 skip，并打印调用者信息
-	logger := z.logger.WithOptions(zap.AddCallerSkip(z.skip))
+	logger := z.logger.WithOptions()
 	logger.Check(level, msg).Write(zapFields...)
 }
 

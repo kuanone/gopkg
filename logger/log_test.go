@@ -37,7 +37,7 @@ func TestGetTraceIDFromContext(t *testing.T) {
 
 	// 创建一个将日志写入 WriteSyncer 的核心。
 	core := zapcore.NewCore(encoder, writeSyncer, l)
-	zapLogger := zap.New(core, zap.AddCaller())
+	zapLogger := zap.New(core)
 
 	// 替换zap包中全局的logger实例，后续在其他包中只需使用zap.L()调用即可
 	zap.ReplaceGlobals(zapLogger)
@@ -45,7 +45,7 @@ func TestGetTraceIDFromContext(t *testing.T) {
 	logger := NewZapLogger(zapLogger)
 
 	ctx := context.WithValue(context.Background(), "trace_id", "12345")
-	logger.WithSkip(2).WithContext(ctx).Info(ctx, "This is an info message with trace id")
+	logger.WithContext(ctx).Info(ctx, "This is an info message with trace id")
 
 	slogLogger := slog.New(slog.NewJSONHandler(logWriter, &slog.HandlerOptions{
 		ReplaceAttr: func(groups []string, a slog.Attr) slog.Attr {
@@ -59,5 +59,5 @@ func TestGetTraceIDFromContext(t *testing.T) {
 		},
 	}))
 	logger = NewSlogLogger(slogLogger)
-	logger.WithContext(ctx).Info(ctx, "This is an info message with slog and trace id")
+	logger.WithContext(ctx).Info(ctx, "This is an info message with trace id")
 }
