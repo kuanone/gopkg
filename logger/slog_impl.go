@@ -8,7 +8,6 @@ import (
 	"runtime"
 	"strconv"
 	"strings"
-	"time"
 )
 
 type SlogLogger struct {
@@ -103,7 +102,7 @@ func (h *CustomJSONHandler) Handle(ctx context.Context, r slog.Record) error {
 		return true
 	})
 
-	entry["ts"] = r.Time.Format(time.RFC3339)
+	entry["ts"] = r.Time.Format("2006-01-02T15:04:05.000Z0700")
 	entry["level"] = strings.ToLower(r.Level.String())
 	entry["msg"] = r.Message
 
