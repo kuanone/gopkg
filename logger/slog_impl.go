@@ -2,10 +2,13 @@ package logger
 
 import (
 	"context"
+	"encoding/json"
+	"io"
 	"log/slog"
 	"runtime"
 	"strconv"
 	"strings"
+	"time"
 )
 
 type SlogLogger struct {
@@ -77,4 +80,43 @@ func trimFuncName(funcName string) string {
 		return parts[len(parts)-1]
 	}
 	return funcName
+}
+
+type CustomJSONHandler struct {
+	writer io.Writer
+	level  slog.Level
+}
+
+func NewCustomJSONHandler(w io.Writer) slog.Handler {
+	return &CustomJSONHandler{writer: w, level: slog.LevelInfo}
+}
+
+func (h *CustomJSONHandler) Enabled(ctx context.Context, level slog.Level) bool {
+	return level >= h.level
+}
+
+func (h *CustomJSONHandler) Handle(ctx context.Context, r slog.Record) error {
+	entry := make(map[string]interface{})
+
+	r.Attrs(func(attr slog.Attr) bool {
+		entry[attr.Key] = attr.Value
+		return true
+	})
+
+	entry["ts"] = r.Time.Format(time.RFC3339)
+	entry["level"] = strings.ToLower(r.Level.String())
+	entry["msg"] = r.Message
+
+	if err := json.NewEncoder(h.writer).Encode(entry); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (h *CustomJSONHandler) WithAttrs(attrs []slog.Attr) slog.Handler {
+	return h
+}
+
+func (h *CustomJSONHandler) WithGroup(name string) slog.Handler {
+	return h
 }

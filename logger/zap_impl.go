@@ -2,10 +2,11 @@ package logger
 
 import (
 	"context"
-	"go.uber.org/zap"
-	"go.uber.org/zap/zapcore"
 	"runtime"
 	"strconv"
+
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 )
 
 type ZapLogger struct {
