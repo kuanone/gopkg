@@ -2,7 +2,9 @@ package logger
 
 import (
 	"context"
+	"io"
 	"log/slog"
+	"os"
 	"testing"
 	"time"
 
@@ -46,8 +48,8 @@ func TestGetTraceIDFromContext(t *testing.T) {
 
 	ctx := context.WithValue(context.Background(), "trace_id", "12345")
 	logger.WithContext(ctx).Info(ctx, "This is an info message with trace id")
-
-	slogLogger := slog.New(slog.NewJSONHandler(logWriter, &slog.HandlerOptions{
+	multiWriter := io.MultiWriter(os.Stdout, logWriter)
+	slogLogger := slog.New(slog.NewJSONHandler(multiWriter, &slog.HandlerOptions{
 		ReplaceAttr: func(groups []string, a slog.Attr) slog.Attr {
 			if a.Key == "time" {
 				a.Key = "ts"

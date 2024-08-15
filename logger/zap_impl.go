@@ -2,6 +2,8 @@ package logger
 
 import (
 	"context"
+	"io"
+	"os"
 	"runtime"
 	"strconv"
 
@@ -100,8 +102,8 @@ func getZapLogWriter(filename string, maxsize, maxBackup, maxAge int) zapcore.Wr
 	// AddSync 将 io.Writer 转换为 WriteSyncer。
 	// 它试图变得智能：如果 io.Writer 的具体类型实现了 WriteSyncer，我们将使用现有的 Sync 方法。
 	// 如果没有，我们将添加一个无操作同步。
-
-	return zapcore.AddSync(lumberJackLogger)
+	multiWriter := io.MultiWriter(os.Stdout, lumberJackLogger)
+	return zapcore.AddSync(multiWriter)
 }
 
 // 负责设置 encoding 的日志格式
