@@ -7,6 +7,8 @@ import (
 	"runtime"
 	"strconv"
 
+	"github.com/bytedance/sonic"
+
 	"gopkg.in/natefinch/lumberjack.v2"
 
 	"go.uber.org/zap"
@@ -110,7 +112,7 @@ func getZapLogWriter(filename string, maxsize, maxBackup, maxAge int) zapcore.Wr
 func getZapEncoder() zapcore.Encoder {
 	// 获取一个指定的的EncoderConfig，进行自定义
 	encodeConfig := zap.NewProductionEncoderConfig()
-
+	encodeConfig.NewReflectedEncoder = NewSonicEncoder
 	// 序列化时间。eg: 2022-09-01T19:11:35.921+0800
 	encodeConfig.EncodeTime = zapcore.ISO8601TimeEncoder
 	// "time":"2022-09-01T19:11:35.921+0800"
@@ -120,4 +122,10 @@ func getZapEncoder() zapcore.Encoder {
 	// 以 package/file:行 的格式 序列化调用程序，从完整路径中删除除最后一个目录外的所有目录。
 	encodeConfig.EncodeCaller = zapcore.ShortCallerEncoder
 	return zapcore.NewJSONEncoder(encodeConfig)
+}
+
+func NewSonicEncoder(w io.Writer) zapcore.ReflectedEncoder {
+	enc := sonic.ConfigStd.NewEncoder(w)
+	enc.SetEscapeHTML(false)
+	return enc
 }
